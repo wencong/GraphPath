@@ -12,6 +12,7 @@ public class Graph : MonoBehaviour {
         distance = new float[points.Length, points.Length];
 
         visited = new bool[points.Length];
+        parentIndex = new int[points.Length];
 
         GraphEdge[] edges = GetComponentsInChildren<GraphEdge>();
 
@@ -31,6 +32,8 @@ public class Graph : MonoBehaviour {
     private bool[] visited;
     private bool bFind = false;
     private Queue<int> queue = new Queue<int>();
+
+    private int[] parentIndex = null;
     public void FindPath(int nStart, int nEnd, ref int[] points, ref int length) {
         if (nStart == nEnd) {
             length = 1;
@@ -43,6 +46,10 @@ public class Graph : MonoBehaviour {
             visited[i] = false;
         }
 
+        for (int i = 0; i < visited.Length; ++i) {
+            parentIndex[i] = -1;
+        }
+
         visited[nStart] = true;
         points[length] = nStart;
         length++;
@@ -51,7 +58,20 @@ public class Graph : MonoBehaviour {
 
         queue.Enqueue(nStart);
 
-        BFS(nEnd, ref points, ref length);
+        if (BFS(nEnd, ref points, ref length)) {
+            length = 0;
+
+            do {
+                points[length] = nEnd;
+                length++;
+                nEnd = parentIndex[nEnd];
+                if (nEnd == -1) {
+                    break;
+                }
+            } while (true);
+
+            Debug.Log(points.ToString());
+        }
     }
 
 
@@ -71,6 +91,7 @@ public class Graph : MonoBehaviour {
                     visited[i] == false) {
                     visited[i] = true;
                     queue.Enqueue(i);
+                    parentIndex[i] = root;
                 }
             }
         }
